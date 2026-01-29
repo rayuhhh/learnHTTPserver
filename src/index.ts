@@ -7,7 +7,13 @@ import { handlerReset } from "./api/reset.js";
 import { handlerValidate } from "./api/validate.js"
 
 import { errorMiddlware, middlewareLogResponses, middlewareMetricsInc } from "./api/middleware.js";
-import { error } from "node:console";
+import postgres from "postgres";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { config } from "./config.js"
+
+const migrationClient = postgres(config.db.url, { max: 1 });
+await migrate(drizzle(migrationClient), config.db.migrationConfig);
 
 const catchAsync = (fn: Function) => (req: any, res: any, next: any) => {
     return Promise.resolve(fn(req, res,next)).catch(next);
@@ -36,6 +42,6 @@ app.post("/api/validate_chirp", catchAsync(handlerValidate));
 app.use(errorMiddlware);
 
 app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running at http://localhost:${config.api.port}`);
 });
 
