@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { respondWithError, respondWithJSON } from "./json.js";
-import { resourceLimits } from "node:worker_threads";
+
 import { BadRequestError } from "./errors.js";
 
 export async function handlerValidate(req: Request, res: Response) {
