@@ -4,7 +4,7 @@ import express from "express";
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerMetrics } from "./api/metrics.js";
 import { handlerReset } from "./api/reset.js";
-import { handlerValidate } from "./api/validate.js"
+import { handlerChirpsValidate, handlerGetAllChirps, handlerGetChirp } from "./api/chirps.js"
 
 import { errorMiddlware, middlewareLogResponses, middlewareMetricsInc } from "./api/middleware.js";
 import postgres from "postgres";
@@ -29,15 +29,17 @@ app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 //app.get("/api/healthz", handlerReadiness);
 app.get("/api/healthz", catchAsync(handlerReadiness));
-
 // app.get("/admin/metrics", handlerMetrics);
 app.get("/admin/metrics", catchAsync(handlerMetrics));
 // app.get("/admin/reset", handlerReset);
+app.get("/api/chirps", catchAsync(handlerGetAllChirps));
+app.get("/api/chirps/:chirpId", catchAsync(handlerGetChirp));
 
-app.post("/admin/reset", handlerReset);
+app.post("/admin/reset", catchAsync(handlerReset));
 app.post("/admin/rest", catchAsync(handlerReset));
-app.post("/api/validate_chirp", catchAsync(handlerValidate));
+// app.post("/api/validate_chirp", catchAsync(handlerValidate));
 app.post("/api/users", catchAsync(handlerAddUser));
+app.post("/api/chirps", catchAsync(handlerChirpsValidate));
 
 
 //error handler
