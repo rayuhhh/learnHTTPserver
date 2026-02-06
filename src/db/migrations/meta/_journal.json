@@ -15,6 +15,20 @@
       "when": 1769742495312,
       "tag": "0001_long_abomination",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770176815361,
+      "tag": "0002_strong_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770178182328,
+      "tag": "0003_glorious_blindfold",
+      "breakpoints": true
     }
   ]
 }

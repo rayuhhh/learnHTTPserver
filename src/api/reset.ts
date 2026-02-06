@@ -18,6 +18,7 @@ export async function handlerReset(_: Request, res: Response) {
     }
     config.api.fileserverHits = 0;
     await deleteUsers();
-    res.end()
+    res.send('deleted users');
+    res.end();
     //respondWithJSON(res, 200, {body: "good"});
 }
