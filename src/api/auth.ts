@@ -3,8 +3,11 @@ import { UserNotAuthenticatedError } from "./errors";
 import { checkPasswordHash } from "../auth.js"
 import { respondWithJSON } from "./json.js";
 
+
 import type { Request, Response } from "express";
 import type { UserResponse } from "./users.js";
+
+
 
 export async function handlerLogin(req: Request, res: Response) {
     type UserPayload = {
@@ -31,3 +34,4 @@ export async function handlerLogin(req: Request, res: Response) {
         email: user.email,
     } satisfies UserResponse);
 }
+
