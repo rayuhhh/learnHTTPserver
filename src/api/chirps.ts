@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
 import { respondWithError, respondWithJSON } from "./json.js";
 
-import { BadRequestError, NotFoundError } from "./errors.js";
+import { BadRequestError, NotFoundError, UserNotAuthenticatedError } from "./errors.js";
 import { addChirp, getAllChirps, getChirp } from "../db/queries/chirps.js";
+import { getBearerToken, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 
 export async function handlerChirpsValidate(req: Request, res: Response) {
     type param = {
@@ -10,12 +12,29 @@ export async function handlerChirpsValidate(req: Request, res: Response) {
         userId: string;
     };
 
-    const params: param = req.body;
-    const cleaned = validateChirp(params.body);
-    const chirp = await addChirp({body: cleaned, userId: params.userId});
+    try{
+        const token = getBearerToken(req);
+        const userId = validateJWT(token, config.api.jwtToken);
 
-    respondWithJSON(res, 201, chirp);
+        const {body} = req.body as { body: string };
+        if (!body) {
+            return respondWithError(res, 400, "Chirp body is required");
+        }
 
+        const cleaned = validateChirp(body);
+        const chirp = await addChirp({body:cleaned, userId: userId});
+        respondWithJSON(res, 201, chirp);
+    } catch (err: any) {
+        console.error("Auth Error:", err.message);
+        throw new UserNotAuthenticatedError("Auth Error");
+    }
+
+    // const params: param = req.body;
+    // const cleaned = validateChirp(params.body);
+    // const chirp = await addChirp({body: cleaned, userId: params.userId});
+
+    // respondWithJSON(res, 201, chirp);
+//////////////////////////////////////////////////////////
 
     // if(!params.body) {
     //     return respondWithError(res, 400, "Something went wrong");

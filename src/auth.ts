@@ -1,5 +1,8 @@
 import * as argon2 from "argon2";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { Request } from "express";
+
+import { UserNotAuthenticatedError, BadRequestError } from "./api/errors.js";
 
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 
@@ -26,15 +29,37 @@ export function makeJWT(userId: string, expiresIn: number, secret: string): stri
 }
 
 export function validateJWT(tokenString: string, secret: string): string {
+    let decoded: payload;
     try {
-        const decoded = jwt.verify(tokenString, secret) as payload;
-
-        if (!decoded.sub) {
-            throw new Error("Invalid token payload: missing subject");
-        }
-
-        return decoded.sub;
+        decoded = jwt.verify(tokenString, secret) as payload;
     } catch (err) {
-        throw new Error("Unauthorized: Invalid or expired token");
+        throw new UserNotAuthenticatedError("Unauthorized: Invalid or expired token");
+    }  
+    if (decoded.iss !== "chirpy") {
+        throw new UserNotAuthenticatedError("Invalid token payload: missing subject");
     }
+
+    if (!decoded.sub) {
+        throw new UserNotAuthenticatedError("No user ID in token");
+    }
+    return decoded.sub;
+}
+
+
+export function getBearerToken(req: Request): string {
+    const authHeader = req.get("Authorization");
+
+    if(!authHeader) {
+        throw new BadRequestError("Authorization header is missing");
+    }
+
+    return extractToken(authHeader);
+}
+
+export function extractToken(header: string) {
+    const parts = header.split(/\s+/);
+    if (parts.length < 2 || parts[0] !== "Bearer") {
+        throw new BadRequestError("Invalid authorization header format. Expected 'Bearer <token>'")
+    }
+    return parts[1];
 }
