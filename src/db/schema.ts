@@ -1,5 +1,5 @@
-import { boolean } from "drizzle-orm/gel-core";
-import { pgTable, timestamp, varchar, uuid, } from "drizzle-orm/pg-core";
+
+import { pgTable, timestamp, varchar, uuid, boolean } from "drizzle-orm/pg-core";
 
 
 

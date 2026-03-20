@@ -2,8 +2,9 @@ import argon2 from "argon2";
 import crypto from "crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request } from "express";
+import { config } from "./config.js";
 
-import { UserNotAuthenticatedError, BadRequestError } from "./api/errors.js";
+import { UserNotAuthenticatedError, BadRequestError, UserForbiddenError } from "./api/errors.js";
 
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 
@@ -72,4 +73,17 @@ export function extractToken(header: string) {
 
 export function makeRefreshToken() {
     return crypto.randomBytes(32).toString('hex');
+}
+
+export function getAPIKey(req: Request) {
+    const auth = req.get("Authorization");
+    if(!auth) {
+        return false;
+    }
+
+    const apikey = auth.split(" ")[1];
+    if (apikey !== config.polka.apikey) {
+        return false;
+    }
+    return true;
 }

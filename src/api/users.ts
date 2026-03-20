@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { createUser, getUserByEmail, updateEmailPw } from "../db/queries/users.js";
+import { createUser, getUserByEmail, updateEmailPw, upgradeRed } from "../db/queries/users.js";
 import { respondWithJSON, respondWithError } from "./json.js";
-import { hashPassword, checkPasswordHash, getBearerToken, validateJWT } from "../auth.js";
+import { hashPassword, checkPasswordHash, getBearerToken, validateJWT, getAPIKey } from "../auth.js";
 import { NewUser } from "../db/schema.js";
 import { config } from "../config.js";
 import { param } from "drizzle-orm";
@@ -35,6 +35,7 @@ export async function handlerAddUser(req: Request, res: Response) {
         email: user.email,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        isChirpyRed: user.isChirpyRed,
     } satisfies UserResponse);
 }
 
@@ -62,6 +63,32 @@ export async function handlerUpdateEmailPw(req: Request, res: Response) {
         updatedAt: user.updatedAt,
         email: user.email,
     } satisfies UserResponse);
+}
+
+export async function handlerUpgradeRed(req: Request, res: Response) {
+    type parameters = {
+        event: string,
+        data: {
+            userId: string, 
+        },
+    };
+    const apikey = getAPIKey(req);
+    if (!apikey) {
+        return res.status(401).send();
+    }
+    const params: parameters = req.body;
+    if (params.event && params.event !== "user.upgraded") {
+        return res.status(204).send();
+    }
+    if (params.event === "user.upgraded") {
+        
+        const user = await upgradeRed(params.data.userId);
+        if (!user) {
+            return respondWithError(res, 400, `User ${params.data.userId} not found`);
+        }
+        
+        return res.status(204).send();
+    }
 }
 
 
