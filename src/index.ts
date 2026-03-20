@@ -4,15 +4,15 @@ import express from "express";
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerMetrics } from "./api/metrics.js";
 import { handlerReset } from "./api/reset.js";
-import { handlerChirpsValidate, handlerGetAllChirps, handlerGetChirp } from "./api/chirps.js"
+import { handlerChirpsValidate, handlerGetAllChirps, handlerGetChirp, handlerDeleteChirp } from "./api/chirps.js"
 
 import { errorMiddlware, middlewareLogResponses, middlewareMetricsInc } from "./api/middleware.js";
 import postgres from "postgres";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { config } from "./config.js"
-import { handlerAddUser } from "./api/users.js";
-import { handlerLogin } from "./api/auth.js";
+import { handlerAddUser, handlerUpdateEmailPw } from "./api/users.js";
+import { handlerLogin, handlerRefresh, handlerRevoke } from "./api/auth.js";
 
 const migrationClient = postgres(config.db.url, { max: 1 });
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
@@ -37,11 +37,17 @@ app.get("/api/chirps", catchAsync(handlerGetAllChirps));
 app.get("/api/chirps/:chirpId", catchAsync(handlerGetChirp));
 
 app.post("/admin/reset", catchAsync(handlerReset));
-app.post("/admin/rest", catchAsync(handlerReset));
+//app.post("/admin/rest", catchAsync(handlerReset)); 
 // app.post("/api/validate_chirp", catchAsync(handlerValidate));
 app.post("/api/users", catchAsync(handlerAddUser));
 app.post("/api/chirps", catchAsync(handlerChirpsValidate));
 app.post("/api/login", catchAsync(handlerLogin));
+app.post("/api/refresh", catchAsync(handlerRefresh));
+app.post("/api/revoke", catchAsync(handlerRevoke));
+
+app.put("/api/users", catchAsync(handlerUpdateEmailPw));
+
+app.delete("/api/chirps/:chirpId", catchAsync(handlerDeleteChirp))
 
 
 //error handler

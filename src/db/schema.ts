@@ -1,4 +1,5 @@
-import { pgTable, timestamp, varchar, uuid, text, unique } from "drizzle-orm/pg-core";
+import { boolean } from "drizzle-orm/gel-core";
+import { pgTable, timestamp, varchar, uuid, } from "drizzle-orm/pg-core";
 
 
 
@@ -13,6 +14,9 @@ export const users = pgTable("users", {
   hashedPassword: varchar("hashed_password", { length: 256 })
     .notNull()
     .default("unset"),
+  isChirpyRed: boolean("is_chirpy_red")
+    .default(false)
+    .notNull(),
 });
 
 export type NewUser = typeof users.$inferInsert;
@@ -28,3 +32,16 @@ export const chirps = pgTable("chrips", {
 })
 
 export type NewChirp = typeof chirps.$inferInsert;
+
+export const refreshTokens = pgTable("refresh_tokens", {
+  token: varchar("token", { length: 256 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(()=> new Date()),
+  userId: uuid("user_id").notNull().references(() => users.id, {
+    onDelete:"cascade",
+  }),
+  expiresAt: timestamp("expires_at").notNull(),
+  revokedAt: timestamp("revoked_at"),
+})
+
+export type NewToken = typeof refreshTokens.$inferInsert;

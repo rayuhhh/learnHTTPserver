@@ -34,3 +34,25 @@ export async function getUserByEmail(email: string) {
   return user;
 }
 
+export async function updateEmailPw(id: string, email: string, hashedPassword: string) {
+  const [update] = await db
+    .update(users)
+    .set({
+      email: email,
+      hashedPassword: hashedPassword,
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+    return update;
+}
+
+export async function upgradeRed(id: string) {
+  const [update] = await db
+    .update(users)
+    .set({isChirpyRed: true})
+    .where(eq(users.id, id))
+    .returning();
+  return update;
+}
+

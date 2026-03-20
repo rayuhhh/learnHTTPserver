@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import { respondWithError, respondWithJSON } from "./json.js";
 
-import { BadRequestError, NotFoundError, UserNotAuthenticatedError } from "./errors.js";
-import { addChirp, getAllChirps, getChirp } from "../db/queries/chirps.js";
+import { BadRequestError, NotFoundError, UserNotAuthenticatedError, UserForbiddenError } from "./errors.js";
+import { addChirp, getAllChirps, getChirp, deleteChirp } from "../db/queries/chirps.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
 
@@ -14,7 +14,7 @@ export async function handlerChirpsValidate(req: Request, res: Response) {
 
     try{
         const token = getBearerToken(req);
-        const userId = validateJWT(token, config.api.jwtToken);
+        const userId = validateJWT(token, config.jwt.secret);
 
         const {body} = req.body as { body: string };
         if (!body) {
@@ -103,7 +103,7 @@ export async function handlerGetChirp(req: Request, res: Response) {
     const { chirpId } =  req.params;
     
     if (!chirpId) {
-        return respondWithError(res, 404, `${chirpId}`)
+        return respondWithError(res, 404, `${chirpId}`);
     }
 
     const chirp = await getChirp(chirpId as string);
@@ -112,4 +112,24 @@ export async function handlerGetChirp(req: Request, res: Response) {
         throw new NotFoundError(`Chirp with chirpId: ${chirpId} not found`)
     }
     respondWithJSON(res, 200, chirp);
+}
+
+export async function handlerDeleteChirp(req: Request, res: Response) {
+    const { chirpId } = req.params;
+
+    const token = getBearerToken(req);
+    const subject = validateJWT(token, config.jwt.secret);
+
+    const chirp = await getChirp(chirpId as string);
+    if (!chirp) {
+        return respondWithError(res, 404, `${chirpId}`);
+    }
+    if (chirp.userId !== subject) {
+        return respondWithError(res, 403, `${chirpId}`);
+    }
+    const deletedChirp = await deleteChirp(chirpId as string, subject);
+
+    return respondWithJSON(res, 204, 1);
+    
+
 }

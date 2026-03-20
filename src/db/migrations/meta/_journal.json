@@ -29,6 +29,13 @@
       "when": 1770178182328,
       "tag": "0003_glorious_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771465866566,
+      "tag": "0004_wonderful_blacklash",
+      "breakpoints": true
     }
   ]
 }
