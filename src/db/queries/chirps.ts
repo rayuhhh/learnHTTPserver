@@ -11,12 +11,21 @@ export async function addChirp(chirp: NewChirp) {
     return result;
 }
 
-export async function getAllChirps() {
-    const result = await db
-        .select()
-        .from(chirps)
-        .orderBy(asc(chirps.createdAt));
-    return result;
+export async function getAllChirps(authorId?: string) {
+    if (authorId) {
+        const result = await db
+            .select()
+            .from(chirps)
+            .where(eq(chirps.userId, authorId))
+            .orderBy(asc(chirps.createdAt));
+            return result;
+    } else {
+        const result = await db
+            .select()
+            .from(chirps)
+            .orderBy(asc(chirps.createdAt));
+            return result;
+    }
 }
 
 export async function getChirp(chirpId: string) {

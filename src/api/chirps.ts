@@ -95,8 +95,14 @@ function validateChirp(body: string) {
 }
 
 export async function handlerGetAllChirps(req: Request, res: Response) {
-    const chirps = await getAllChirps();
-    res.status(200).json(chirps)
+    const authorId = req.query.authorId as string | undefined;
+    if (authorId) {
+        const chirps = await(getAllChirps(authorId))
+        res.status(200).send(chirps)
+        } else {
+            const chirps = await getAllChirps();
+        res.status(200).json(chirps)
+        }
 }
 
 export async function handlerGetChirp(req: Request, res: Response) {
